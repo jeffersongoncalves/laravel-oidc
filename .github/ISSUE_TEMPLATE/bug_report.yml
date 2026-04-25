@@ -1,0 +1,55 @@
+name: Bug Report
+description: Report a bug encountered while using laravel-oidc
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to file a bug report! Please fill out the form below.
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version
+      placeholder: e.g. v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: e.g. 8.3
+    validations:
+      required: true
+  - type: input
+    id: laravel-version
+    attributes:
+      label: Laravel version
+      placeholder: e.g. 12.x
+    validations:
+      required: true
+  - type: input
+    id: idp
+    attributes:
+      label: Identity Provider
+      placeholder: e.g. Azure AD, Okta, Auth0, Keycloak, Google Workspace
+    validations:
+      required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal reproduction (config, code snippet, expected vs actual behavior).
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / stack trace
+      render: shell

@@ -1,0 +1,78 @@
+{
+    "name": "jeffersongoncalves/laravel-oidc",
+    "description": "OpenID Connect for Laravel via a custom Socialite driver. Multi-tenant ready.",
+    "keywords": [
+        "jeffersongoncalves",
+        "laravel",
+        "socialite",
+        "oidc",
+        "openid-connect",
+        "sso",
+        "azure-ad",
+        "okta",
+        "auth0",
+        "keycloak"
+    ],
+    "homepage": "https://github.com/jeffersongoncalves/laravel-oidc",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jefferson Gonçalves",
+            "email": "gerson.simao.92@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "firebase/php-jwt": "^6.10|^7.0",
+        "guzzlehttp/guzzle": "^7.8",
+        "illuminate/contracts": "^11.0|^12.0|^13.0",
+        "illuminate/support": "^11.0|^12.0|^13.0",
+        "laravel/socialite": "^5.10",
+        "spatie/laravel-package-tools": "^1.16"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
+        "pestphp/pest": "^3.7|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+        "phpstan/phpstan": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "JeffersonGoncalves\\LaravelOidc\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "JeffersonGoncalves\\LaravelOidc\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "JeffersonGoncalves\\LaravelOidc\\OidcServiceProvider"
+            ],
+            "aliases": {
+                "Oidc": "JeffersonGoncalves\\LaravelOidc\\Facades\\Oidc"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

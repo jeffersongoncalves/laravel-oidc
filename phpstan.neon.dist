@@ -1,0 +1,18 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - src
+    level: 8
+    tmpDir: build/phpstan
+    checkOctaneCompatibility: true
+    checkModelProperties: false
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        - identifier: missingType.iterableValue
+        -
+            message: '#Trait JeffersonGoncalves\\LaravelOidc\\Concerns\\HasOidcConfig is used zero times#'
+            identifier: trait.unused
+            path: src/Concerns/HasOidcConfig.php
