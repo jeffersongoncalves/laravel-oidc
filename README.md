@@ -1,6 +1,6 @@
 <div class="filament-hidden">
 
-![Laravel OIDC](https://raw.githubusercontent.com/jeffersongoncalves/laravel-oidc/master/art/jeffersongoncalves-laravel-oidc.jpg)
+![Laravel OIDC](https://raw.githubusercontent.com/jeffersongoncalves/laravel-oidc/master/art/jeffersongoncalves-laravel-oidc.png)
 
 </div>
 
