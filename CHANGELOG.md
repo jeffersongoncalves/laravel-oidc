@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-oidc` will be documented in this file.
 
+## v1.0.1 - 2026-04-26
+
+**Full Changelog**: https://github.com/jeffersongoncalves/laravel-oidc/compare/v1.0.0...v1.0.1
+
 ## v1.0.0 - 2026-04-25
 
 First public release of **laravel-oidc** — OpenID Connect for Laravel via a custom Socialite driver.
@@ -25,6 +29,7 @@ First public release of **laravel-oidc** — OpenID Connect for Laravel via a cu
 
 ```bash
 composer require jeffersongoncalves/laravel-oidc
+
 
 ```
 See the [README](https://github.com/jeffersongoncalves/laravel-oidc#readme) for single-tenant and multi-tenant usage examples, and the supported-IdP table (Azure AD/Entra ID, Google Workspace, Okta, Auth0, Keycloak, Ping Identity, …).
