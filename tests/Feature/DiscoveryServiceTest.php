@@ -76,6 +76,39 @@ it('throws DiscoveryFailedException when required fields are missing', function 
     app(OidcDiscoveryService::class)->discover('https://idp.example.com');
 })->throws(DiscoveryFailedException::class);
 
+it('rejects a discovery document whose issuer does not match the requested issuer', function () {
+    $payload = discoveryPayload();
+    $payload['issuer'] = 'https://attacker.example.com';
+
+    Http::fake([
+        'https://idp.example.com/.well-known/openid-configuration' => Http::response($payload),
+    ]);
+
+    app(OidcDiscoveryService::class)->discover('https://idp.example.com');
+})->throws(DiscoveryFailedException::class, 'issuer mismatch');
+
+it('rejects a non-https issuer url', function () {
+    app(OidcDiscoveryService::class)->discover('http://idp.example.com');
+})->throws(DiscoveryFailedException::class, 'Insecure issuer URL');
+
+it('rejects a non-https jwks url', function () {
+    app(OidcDiscoveryService::class)->getJwks('http://idp.example.com/.well-known/jwks.json');
+})->throws(JwksFetchException::class, 'Insecure JWKS URL');
+
+it('allows insecure urls when explicitly enabled via config', function () {
+    config()->set('oidc.http.allow_insecure_urls', true);
+
+    Http::fake([
+        'http://idp.example.com/.well-known/openid-configuration' => Http::response(array_merge(discoveryPayload(), [
+            'issuer' => 'http://idp.example.com',
+        ])),
+    ]);
+
+    $document = app(OidcDiscoveryService::class)->discover('http://idp.example.com');
+
+    expect($document->issuer)->toBe('http://idp.example.com');
+});
+
 it('caches and fetches jwks', function () {
     Http::fake([
         'https://idp.example.com/.well-known/jwks.json' => Http::response(['keys' => [['kty' => 'RSA', 'kid' => 'k1']]]),

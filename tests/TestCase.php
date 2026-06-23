@@ -23,5 +23,6 @@ class TestCase extends Orchestra
         config()->set('database.default', 'testing');
         config()->set('cache.default', 'array');
         config()->set('session.driver', 'array');
+        config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
     }
 }

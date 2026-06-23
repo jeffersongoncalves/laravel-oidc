@@ -12,6 +12,7 @@ use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Http;
 use JeffersonGoncalves\LaravelOidc\Data\OidcConfig;
 use JeffersonGoncalves\LaravelOidc\Data\OidcUser;
+use JeffersonGoncalves\LaravelOidc\Exceptions\OidcException;
 use JeffersonGoncalves\LaravelOidc\Providers\GenericOidcProvider;
 use JeffersonGoncalves\LaravelOidc\Tests\Support\RsaKeyset;
 
@@ -113,3 +114,66 @@ it('runs the full OIDC flow end to end', function () {
         ->and($user->idTokenClaims['sub'])->toBe('user-42')
         ->and($user->idTokenClaims['nonce'])->toBe('flow-nonce');
 });
+
+it('rejects the response when the UserInfo sub does not match the id_token sub', function () {
+    $issuer = 'https://idp.example.com';
+    $keyset = RsaKeyset::generate('rotating-key');
+
+    $discoveryPayload = [
+        'issuer' => $issuer,
+        'authorization_endpoint' => $issuer.'/oauth2/authorize',
+        'token_endpoint' => $issuer.'/oauth2/token',
+        'userinfo_endpoint' => $issuer.'/oauth2/userinfo',
+        'jwks_uri' => $issuer.'/.well-known/jwks.json',
+    ];
+
+    Http::fake([
+        $issuer.'/.well-known/openid-configuration' => Http::response($discoveryPayload),
+        $issuer.'/.well-known/jwks.json' => Http::response($keyset->jwks()),
+    ]);
+
+    $now = time();
+    $idToken = $keyset->sign([
+        'iss' => $issuer,
+        'aud' => 'client-abc',
+        'sub' => 'user-42',
+        'iat' => $now,
+        'exp' => $now + 600,
+        'nonce' => 'flow-nonce',
+    ]);
+
+    $tokenResponseBody = json_encode([
+        'access_token' => 'access-xyz',
+        'id_token' => $idToken,
+        'token_type' => 'Bearer',
+        'expires_in' => 3600,
+        'scope' => 'openid email profile',
+    ]);
+
+    // UserInfo advertises a different "sub" than the validated id_token.
+    $userinfoResponseBody = json_encode([
+        'sub' => 'attacker-99',
+        'email' => 'evil@example.com',
+    ]);
+
+    $mock = new MockHandler([
+        new Response(200, ['Content-Type' => 'application/json'], $tokenResponseBody),
+        new Response(200, ['Content-Type' => 'application/json'], $userinfoResponseBody),
+    ]);
+
+    $guzzle = new Client(['handler' => HandlerStack::create($mock)]);
+
+    $request = callbackRequestWithStateAndNonce('persisted-state', 'flow-nonce', 'persisted-verifier');
+
+    $provider = new GenericOidcProvider($request, '', '', '');
+    $provider->setHttpClient($guzzle);
+    $provider->setConfig(new OidcConfig(
+        issuerUrl: $issuer,
+        clientId: 'client-abc',
+        clientSecret: 'secret',
+        redirectUri: 'http://localhost/sso/callback',
+        scopes: ['openid', 'email', 'profile'],
+    ));
+
+    $provider->user();
+})->throws(OidcException::class, 'does not match');

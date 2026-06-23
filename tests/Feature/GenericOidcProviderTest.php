@@ -11,6 +11,7 @@ use JeffersonGoncalves\LaravelOidc\Exceptions\OidcException;
 use JeffersonGoncalves\LaravelOidc\Providers\GenericOidcProvider;
 use JeffersonGoncalves\LaravelOidc\Services\OidcDiscoveryService;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 function bootRequestWithSession(array $query = []): Request
 {
@@ -121,3 +122,55 @@ it('throws when getConfig is called before setConfig', function () {
 
     $provider->getConfig();
 })->throws(OidcException::class);
+
+it('throws InvalidStateException when the callback state does not match the session', function () {
+    $request = Request::create('http://localhost/sso/callback', 'GET', [
+        'code' => 'auth-code-123',
+        'state' => 'request-state',
+    ]);
+    $session = new Store('test', new ArraySessionHandler(120));
+    $session->start();
+    $session->put('state', 'a-different-session-state');
+    $request->setLaravelSession($session);
+
+    $provider = new GenericOidcProvider($request, '', '', '');
+    $provider->setConfig(makeConfig());
+
+    $provider->user();
+})->throws(InvalidStateException::class);
+
+it('builds the RP-initiated logout URL from the end_session_endpoint', function () {
+    $discovery = new OidcDiscoveryDocument(
+        issuer: 'https://idp.example.com',
+        authorizationEndpoint: 'https://idp.example.com/oauth2/authorize',
+        tokenEndpoint: 'https://idp.example.com/oauth2/token',
+        userinfoEndpoint: 'https://idp.example.com/oauth2/userinfo',
+        jwksUri: 'https://idp.example.com/.well-known/jwks.json',
+        endSessionEndpoint: 'https://idp.example.com/oauth2/logout',
+    );
+
+    $discoveryService = Mockery::mock(OidcDiscoveryService::class);
+    $discoveryService->shouldReceive('discover')->andReturn($discovery);
+
+    $provider = new GenericOidcProvider(bootRequestWithSession(), '', '', '');
+    $provider->setDiscoveryService($discoveryService)->setConfig(makeConfig());
+
+    $url = $provider->logoutUrl('the-id-token', 'https://app.example.com/logged-out');
+
+    parse_str(parse_url($url, PHP_URL_QUERY) ?: '', $params);
+
+    expect($url)->toStartWith('https://idp.example.com/oauth2/logout')
+        ->and($params)->toHaveKey('id_token_hint', 'the-id-token')
+        ->and($params)->toHaveKey('post_logout_redirect_uri', 'https://app.example.com/logged-out')
+        ->and($params)->toHaveKey('client_id', 'client-abc');
+});
+
+it('throws when the provider does not advertise an end_session_endpoint', function () {
+    $discoveryService = Mockery::mock(OidcDiscoveryService::class);
+    $discoveryService->shouldReceive('discover')->andReturn(makeProviderDiscovery());
+
+    $provider = new GenericOidcProvider(bootRequestWithSession(), '', '', '');
+    $provider->setDiscoveryService($discoveryService)->setConfig(makeConfig());
+
+    $provider->logoutUrl();
+})->throws(OidcException::class, 'end_session_endpoint');

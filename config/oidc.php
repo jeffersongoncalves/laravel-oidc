@@ -28,6 +28,13 @@ return [
     'http' => [
         'timeout' => 5,
         'connect_timeout' => 3,
+
+        /*
+        | Issuer and JWKS URLs must use HTTPS to prevent transport downgrade and
+        | SSRF attacks. Enable this only for local development against an IdP
+        | served over plain HTTP. Never enable it in production.
+        */
+        'allow_insecure_urls' => env('OIDC_ALLOW_INSECURE_URLS', false),
     ],
 
     /*

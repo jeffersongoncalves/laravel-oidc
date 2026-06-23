@@ -60,6 +60,7 @@ class JwtValidator
 
         $claims = (array) $decoded;
 
+        $this->assertRequiredTimeClaims($claims);
         $this->assertIssuer($claims, $discovery->issuer);
         $this->assertAudience($claims, $clientId);
         $this->assertNonce($claims, $expectedNonce);
@@ -124,6 +125,26 @@ class JwtValidator
         $decoded = base64_decode(strtr($segment, '-_', '+/'), true);
 
         return $decoded === false ? '' : $decoded;
+    }
+
+    /**
+     * Require explicit "exp" and "iat" claims. firebase/php-jwt only enforces
+     * expiry when the claim is present, so a token without "exp" would otherwise
+     * never expire.
+     *
+     * @param  array<string, mixed>  $claims
+     *
+     * @throws InvalidIdTokenException
+     */
+    protected function assertRequiredTimeClaims(array $claims): void
+    {
+        foreach (['exp', 'iat'] as $claim) {
+            if (! isset($claims[$claim]) || ! is_numeric($claims[$claim])) {
+                throw new InvalidIdTokenException(
+                    "id_token is missing the required \"{$claim}\" claim."
+                );
+            }
+        }
     }
 
     /**

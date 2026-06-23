@@ -39,7 +39,11 @@ class OidcDiscoveryService
             fn (): array => $this->fetchDiscoveryPayload($url),
         );
 
-        return OidcDiscoveryDocument::fromArray($payload);
+        $document = OidcDiscoveryDocument::fromArray($payload);
+
+        $this->assertIssuerMatches($issuerUrl, $document->issuer);
+
+        return $document;
     }
 
     /**
@@ -51,6 +55,12 @@ class OidcDiscoveryService
      */
     public function getJwks(string $jwksUri): array
     {
+        if ($this->isInsecureUrl($jwksUri)) {
+            throw new JwksFetchException(
+                "Insecure JWKS URL rejected (must use https): {$jwksUri}"
+            );
+        }
+
         $cacheKey = $this->jwksCacheKey($jwksUri);
         $ttl = (int) $this->config->get('oidc.cache.jwks_ttl', 21600);
 
@@ -176,11 +186,66 @@ class OidcDiscoveryService
     {
         $issuer = rtrim($issuerUrl, '/');
 
+        if ($this->isInsecureUrl($issuer)) {
+            throw new DiscoveryFailedException(
+                "Insecure issuer URL rejected (must use https): {$issuer}"
+            );
+        }
+
         if (str_ends_with($issuer, '/.well-known/openid-configuration')) {
             return $issuer;
         }
 
         return $issuer.'/.well-known/openid-configuration';
+    }
+
+    /**
+     * Assert that the issuer advertised by the discovery document matches the
+     * issuer we requested it from (RFC 8414 §3.3 / OIDC Discovery §4.3).
+     *
+     * @throws DiscoveryFailedException
+     */
+    protected function assertIssuerMatches(string $requestedIssuer, string $documentIssuer): void
+    {
+        $expected = $this->normalizeIssuer($requestedIssuer);
+        $actual = rtrim($documentIssuer, '/');
+
+        if ($expected !== $actual) {
+            throw new DiscoveryFailedException(
+                "Discovery issuer mismatch: requested '{$expected}' but the document advertises '{$actual}' (RFC 8414 §3.3)."
+            );
+        }
+    }
+
+    protected function normalizeIssuer(string $issuerUrl): string
+    {
+        $issuer = rtrim($issuerUrl, '/');
+
+        if (str_ends_with($issuer, '/.well-known/openid-configuration')) {
+            $issuer = substr($issuer, 0, -strlen('/.well-known/openid-configuration'));
+        }
+
+        return rtrim($issuer, '/');
+    }
+
+    /**
+     * Reject non-HTTPS issuer/JWKS URLs to avoid transport downgrade and SSRF
+     * in multi-tenant setups. May be overridden via config for local testing.
+     */
+    protected function isInsecureUrl(string $url): bool
+    {
+        if ($this->allowsInsecureUrls()) {
+            return false;
+        }
+
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+
+        return $scheme !== 'https';
+    }
+
+    protected function allowsInsecureUrls(): bool
+    {
+        return (bool) $this->config->get('oidc.http.allow_insecure_urls', false);
     }
 
     protected function discoveryCacheKey(string $issuerUrl): string

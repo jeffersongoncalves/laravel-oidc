@@ -88,6 +88,30 @@ it('rejects an expired token (outside leeway)', function () {
     app(JwtValidator::class)->validate($token, $this->discovery, 'client-abc', null, 60);
 })->throws(InvalidIdTokenException::class);
 
+it('rejects a token that has no exp claim', function () {
+    $now = time();
+    $token = $this->keyset->sign([
+        'iss' => $this->discovery->issuer,
+        'aud' => 'client-abc',
+        'sub' => 'user-1',
+        'iat' => $now,
+    ]);
+
+    app(JwtValidator::class)->validate($token, $this->discovery, 'client-abc');
+})->throws(InvalidIdTokenException::class, 'exp');
+
+it('rejects a token that has no iat claim', function () {
+    $now = time();
+    $token = $this->keyset->sign([
+        'iss' => $this->discovery->issuer,
+        'aud' => 'client-abc',
+        'sub' => 'user-1',
+        'exp' => $now + 600,
+    ]);
+
+    app(JwtValidator::class)->validate($token, $this->discovery, 'client-abc');
+})->throws(InvalidIdTokenException::class, 'iat');
+
 it('rejects a token signed with a disallowed algorithm', function () {
     config()->set('oidc.jwt.allowed_algorithms', ['ES256']);
 

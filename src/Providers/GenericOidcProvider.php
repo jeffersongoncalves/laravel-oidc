@@ -59,6 +59,40 @@ class GenericOidcProvider extends AbstractProvider implements ProviderInterface
         return $this->oidcConfig;
     }
 
+    /**
+     * Build the RP-initiated logout URL using the provider's end_session_endpoint.
+     *
+     * @see https://openid.net/specs/openid-connect-rpinitiated-1_0.html
+     *
+     * @throws OidcException when the provider does not advertise an end_session_endpoint
+     */
+    public function logoutUrl(?string $idTokenHint = null, ?string $postLogoutRedirectUri = null): string
+    {
+        $discovery = $this->resolveDiscovery();
+
+        if ($discovery->endSessionEndpoint === null) {
+            throw new OidcException(
+                'The OpenID Provider does not advertise an end_session_endpoint for RP-initiated logout.'
+            );
+        }
+
+        $params = array_filter([
+            'id_token_hint' => $idTokenHint,
+            'post_logout_redirect_uri' => $postLogoutRedirectUri,
+            'client_id' => $this->getConfig()->clientId,
+        ], static fn ($value): bool => $value !== null && $value !== '');
+
+        if ($params === []) {
+            return $discovery->endSessionEndpoint;
+        }
+
+        $separator = str_contains($discovery->endSessionEndpoint, '?') ? '&' : '?';
+
+        return $discovery->endSessionEndpoint
+            .$separator
+            .http_build_query($params, '', '&', $this->encodingType);
+    }
+
     public function setDiscoveryService(OidcDiscoveryService $service): self
     {
         $this->discoveryService = $service;
@@ -179,7 +213,20 @@ class GenericOidcProvider extends AbstractProvider implements ProviderInterface
 
         $userinfo = $this->getUserByToken($accessToken);
 
-        $merged = array_merge($claims, $userinfo);
+        $userinfoSub = $userinfo['sub'] ?? null;
+        $idTokenSub = $claims['sub'] ?? null;
+
+        // OIDC §5.3.2: the UserInfo "sub" MUST exactly match the id_token "sub";
+        // otherwise the UserInfo response must not be trusted.
+        if ($userinfoSub !== null && $userinfoSub !== $idTokenSub) {
+            throw new OidcException(
+                'UserInfo "sub" does not match the id_token "sub"; rejecting the response (OIDC §5.3.2).'
+            );
+        }
+
+        // Validated id_token claims are authoritative and must win over the
+        // (separately fetched, unvalidated) UserInfo payload, which only enriches.
+        $merged = array_merge($userinfo, $claims);
 
         /** @var OidcUser $user */
         $user = $this->mapUserToObject($merged);
