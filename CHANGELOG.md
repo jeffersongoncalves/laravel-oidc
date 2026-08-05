@@ -2,6 +2,18 @@
 
 All notable changes to `laravel-oidc` will be documented in this file.
 
+## v1.1.0 - 2026-08-05
+
+### What's Changed
+
+* Pass default algorithm to JWK::parseKeySet by @giorgio93p in https://github.com/jeffersongoncalves/laravel-oidc/pull/1
+
+### New Contributors
+
+* @giorgio93p made their first contribution in https://github.com/jeffersongoncalves/laravel-oidc/pull/1
+
+**Full Changelog**: https://github.com/jeffersongoncalves/laravel-oidc/compare/v1.0.1...v1.1.0
+
 ## v1.0.1 - 2026-04-26
 
 **Full Changelog**: https://github.com/jeffersongoncalves/laravel-oidc/compare/v1.0.0...v1.0.1
@@ -29,6 +41,7 @@ First public release of **laravel-oidc** — OpenID Connect for Laravel via a cu
 
 ```bash
 composer require jeffersongoncalves/laravel-oidc
+
 
 
 ```
