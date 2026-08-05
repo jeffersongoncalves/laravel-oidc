@@ -36,10 +36,9 @@ class JwtValidator
         $leeway = $clockSkew ?? (int) $this->config->get('oidc.jwt.leeway_seconds', 60);
 
         $this->guardAlgorithm($idToken, $allowed);
-
         try {
             $jwks = $this->discovery->getJwks($discovery->jwksUri);
-            $keys = JWK::parseKeySet($jwks);
+            $keys = JWK::parseKeySet($jwks, $this->defaultAlgorithm());
         } catch (Throwable $e) {
             throw new InvalidIdTokenException(
                 "Unable to load JWKS for token validation: {$e->getMessage()}",
@@ -66,6 +65,16 @@ class JwtValidator
         $this->assertNonce($claims, $expectedNonce);
 
         return $claims;
+    }
+
+    public function defaultAlgorithm(): ?string
+    {
+        $alg = $this->config->get('oidc.jwt.default_algorithm');
+        if (\in_array($alg, $this->allowedAlgorithms())) {
+            return $alg;
+        }
+
+        return null;
     }
 
     /**

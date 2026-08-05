@@ -43,14 +43,19 @@ return [
     |--------------------------------------------------------------------------
     |
     | Clock skew is the maximum allowed difference (in seconds) between the
-    | server clock and the IdP clock when validating exp/iat. Symmetric
-    | algorithms such as HS256 are intentionally not allowed by default.
+    | server clock and the IdP clock when validating exp/iat.
     |
+    | Symmetric algorithms such as HS256 are intentionally not allowed by default.
+    |
+    | Specifying key algorithm is optional for the server in a KTY,
+    | but it is required for parsing in this library. Use the 'default_algorithm'
+    | in case of 'JWK must contain an "alg" parameter' error.
     */
 
     'jwt' => [
         'leeway_seconds' => 60,
         'allowed_algorithms' => ['RS256', 'RS384', 'RS512', 'ES256', 'ES384'],
+        'default_algorithm' => null,
     ],
 
     /*
