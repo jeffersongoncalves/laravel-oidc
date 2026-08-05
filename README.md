@@ -67,6 +67,22 @@ OIDC_REDIRECT_URI=https://your-app.test/sso/callback
 For multi-tenant apps, leave the `default` block empty and supply an `OidcConfig` at runtime
 (see below).
 
+### JWT verification
+
+The package accepts only the algorithms listed in `oidc.jwt.allowed_algorithms`. If a trusted
+identity provider publishes JWKS keys without an `alg` parameter, configure a default algorithm
+that is also present in that allow-list:
+
+```php
+'jwt' => [
+    'allowed_algorithms' => ['RS256', 'RS384', 'RS512', 'ES256', 'ES384'],
+    'default_algorithm' => 'RS256',
+],
+```
+
+Leave `default_algorithm` set to `null` unless your identity provider requires it. The default
+does not expand the allow-list, so a value that is not allowed is ignored.
+
 ## Usage
 
 ### Single-tenant (config from `.env`)

@@ -127,6 +127,61 @@ it('rejects a token signed with a disallowed algorithm', function () {
     app(JwtValidator::class)->validate($token, $this->discovery, 'client-abc');
 })->throws(InvalidIdTokenException::class, 'disallowed algorithm');
 
+it('rejects a JWKS key without an algorithm when no default is configured', function () {
+    config()->set('oidc.jwt.default_algorithm', null);
+    $this->discovery = makeDiscovery('https://idp-without-default.example.com');
+
+    $jwks = $this->keyset->jwks();
+    unset($jwks['keys'][0]['alg']);
+
+    Http::fake([
+        $this->discovery->jwksUri => Http::response($jwks),
+    ]);
+
+    $now = time();
+    $token = $this->keyset->sign([
+        'iss' => $this->discovery->issuer,
+        'aud' => 'client-abc',
+        'sub' => 'user-1',
+        'iat' => $now,
+        'exp' => $now + 600,
+    ]);
+
+    app(JwtValidator::class)->validate($token, $this->discovery, 'client-abc');
+})->throws(InvalidIdTokenException::class, 'JWK must contain an "alg" parameter');
+
+it('uses the configured default algorithm for a JWKS key without an algorithm', function () {
+    config()->set('oidc.jwt.default_algorithm', 'RS256');
+    $this->discovery = makeDiscovery('https://idp-with-default.example.com');
+
+    $jwks = $this->keyset->jwks();
+    unset($jwks['keys'][0]['alg']);
+
+    Http::fake([
+        $this->discovery->jwksUri => Http::response($jwks),
+    ]);
+
+    $now = time();
+    $token = $this->keyset->sign([
+        'iss' => $this->discovery->issuer,
+        'aud' => 'client-abc',
+        'sub' => 'user-1',
+        'iat' => $now,
+        'exp' => $now + 600,
+    ]);
+
+    $claims = app(JwtValidator::class)->validate($token, $this->discovery, 'client-abc');
+
+    expect($claims['sub'])->toBe('user-1');
+});
+
+it('ignores a default algorithm that is not allowed', function () {
+    config()->set('oidc.jwt.allowed_algorithms', ['ES256']);
+    config()->set('oidc.jwt.default_algorithm', 'RS256');
+
+    expect(app(JwtValidator::class)->defaultAlgorithm())->toBeNull();
+});
+
 it('accepts the correct nonce', function () {
     $now = time();
     $token = $this->keyset->sign([
