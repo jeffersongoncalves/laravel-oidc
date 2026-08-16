@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-oidc` will be documented in this file.
 
+## v1.1.1 - 2026-08-16
+
+### Security
+
+- fix: require `firebase/php-jwt` ^7.0, patches weak encryption (GHSA-2x45-7fc3-mxwq / CVE-2025-45769)
+
+### Chore
+
+- Add `dependabot.yml` with weekly grouped updates and 7-day cooldown for composer and github-actions
+
 ## v1.1.0 - 2026-08-05
 
 ### What's Changed
@@ -41,6 +51,7 @@ First public release of **laravel-oidc** — OpenID Connect for Laravel via a cu
 
 ```bash
 composer require jeffersongoncalves/laravel-oidc
+
 
 
 
