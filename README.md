@@ -150,6 +150,35 @@ Socialite::driver('oidc')
     ->redirect();
 ```
 
+### Non-standard claim names
+
+Some providers expose user data under non-standard claims (e.g. `mail` instead of `email`).
+Map any of the five user fields (`id`, `nickname`, `name`, `email`, `avatar`) to the claim
+that holds it — unmapped fields keep the standard OIDC claims (`sub`, `preferred_username`,
+`name`, `email`, `picture`):
+
+```php
+// config/oidc.php, "default" block
+'user_field_mappings' => [
+    'email' => 'mail',
+],
+```
+
+Or at runtime:
+
+```php
+$config = new OidcConfig(
+    issuerUrl: $tenant->issuer_url,
+    clientId: $tenant->client_id,
+    clientSecret: $tenant->client_secret,
+    redirectUri: route('sso.callback'),
+    userFieldMappings: ['email' => 'mail'],
+);
+```
+
+Models using `HasOidcConfig` can store the same map in an optional `user_field_mappings`
+JSON column.
+
 ### Discovery without Socialite
 
 ```php

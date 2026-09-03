@@ -75,6 +75,16 @@ return [
         'client_secret' => env('OIDC_CLIENT_SECRET'),
         'redirect_uri' => env('OIDC_REDIRECT_URI'),
         'scopes' => ['openid', 'email', 'profile'],
+
+        /*
+        | Some providers expose non-standard claim names. Map any of the user
+        | fields (id, nickname, name, email, avatar) to the claim that holds it.
+        | Unmapped fields keep the standard OIDC claims (sub, preferred_username,
+        | name, email, picture).
+        |
+        | 'user_field_mappings' => ['email' => 'mail'],
+        */
+        'user_field_mappings' => [],
     ],
 
 ];
