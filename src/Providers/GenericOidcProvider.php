@@ -167,12 +167,17 @@ class GenericOidcProvider extends AbstractProvider implements ProviderInterface
      */
     protected function mapUserToObject(array $user): SocialiteUser
     {
+        $mappings = $this->oidcConfig->userFieldMappings ?? [];
+
+        $claim = static fn (string $field, string $default): mixed => $user[$mappings[$field] ?? $default] ?? null;
+
         return (new OidcUser)->setRaw($user)->map([
-            'id' => $user['sub'] ?? null,
-            'nickname' => $user['preferred_username'] ?? null,
-            'name' => $this->resolveName($user),
-            'email' => $user['email'] ?? null,
-            'avatar' => $user['picture'] ?? null,
+            'id' => $claim('id', 'sub'),
+            'nickname' => $claim('nickname', 'preferred_username'),
+            // "name" keeps its given_name/family_name fallback unless explicitly mapped.
+            'name' => isset($mappings['name']) ? $claim('name', 'name') : $this->resolveName($user),
+            'email' => $claim('email', 'email'),
+            'avatar' => $claim('avatar', 'picture'),
         ]);
     }
 

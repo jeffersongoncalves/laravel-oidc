@@ -12,6 +12,7 @@ use JeffersonGoncalves\LaravelOidc\Providers\GenericOidcProvider;
 use JeffersonGoncalves\LaravelOidc\Services\OidcDiscoveryService;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
+use Laravel\Socialite\Two\User as SocialiteUser;
 
 function bootRequestWithSession(array $query = []): Request
 {
@@ -174,3 +175,59 @@ it('throws when the provider does not advertise an end_session_endpoint', functi
 
     $provider->logoutUrl();
 })->throws(OidcException::class, 'end_session_endpoint');
+
+function mapClaims(array $claims, array $mappings = []): SocialiteUser
+{
+    $provider = new GenericOidcProvider(bootRequestWithSession(), '', '', '');
+
+    $provider->setConfig(new OidcConfig(
+        issuerUrl: 'https://idp.example.com',
+        clientId: 'client-abc',
+        clientSecret: 'secret',
+        redirectUri: 'http://localhost/sso/callback',
+        userFieldMappings: $mappings,
+    ));
+
+    $method = (new ReflectionObject($provider))->getMethod('mapUserToObject');
+    $method->setAccessible(true);
+
+    return $method->invoke($provider, $claims);
+}
+
+it('maps the standard OIDC claims when no mapping is configured', function () {
+    $user = mapClaims([
+        'sub' => 'user-1',
+        'preferred_username' => 'jdoe',
+        'given_name' => 'John',
+        'family_name' => 'Doe',
+        'email' => 'john@example.com',
+        'picture' => 'https://idp.example.com/avatar.png',
+    ]);
+
+    expect($user->getId())->toBe('user-1')
+        ->and($user->getNickname())->toBe('jdoe')
+        ->and($user->getName())->toBe('John Doe')
+        ->and($user->getEmail())->toBe('john@example.com')
+        ->and($user->getAvatar())->toBe('https://idp.example.com/avatar.png');
+});
+
+it('reads user fields from custom claims when mapped', function () {
+    $user = mapClaims([
+        'sub' => 'user-1',
+        'uid' => 'jdoe',
+        'displayName' => 'John Doe',
+        'mail' => 'john@example.com',
+        'thumbnail' => 'https://idp.example.com/avatar.png',
+    ], [
+        'nickname' => 'uid',
+        'name' => 'displayName',
+        'email' => 'mail',
+        'avatar' => 'thumbnail',
+    ]);
+
+    expect($user->getId())->toBe('user-1')
+        ->and($user->getNickname())->toBe('jdoe')
+        ->and($user->getName())->toBe('John Doe')
+        ->and($user->getEmail())->toBe('john@example.com')
+        ->and($user->getAvatar())->toBe('https://idp.example.com/avatar.png');
+});

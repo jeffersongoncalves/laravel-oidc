@@ -12,12 +12,14 @@ use JeffersonGoncalves\LaravelOidc\Data\OidcConfig;
  * @property string $client_secret
  * @property string $redirect_uri
  * @property array<int, string>|null $scopes
+ * @property array<string, string>|null $user_field_mappings
  */
 trait HasOidcConfig
 {
     public function toOidcConfig(): OidcConfig
     {
         $scopes = $this->scopes;
+        $mappings = $this->user_field_mappings;
 
         return new OidcConfig(
             issuerUrl: (string) $this->issuer_url,
@@ -27,6 +29,9 @@ trait HasOidcConfig
             scopes: is_array($scopes) && $scopes !== []
                 ? array_values(array_map('strval', $scopes))
                 : ['openid', 'email', 'profile'],
+            userFieldMappings: is_array($mappings)
+                ? array_map('strval', $mappings)
+                : [],
         );
     }
 
@@ -42,6 +47,7 @@ trait HasOidcConfig
         return array_merge($parentCasts, [
             'client_secret' => 'encrypted',
             'scopes' => 'array',
+            'user_field_mappings' => 'array',
         ]);
     }
 }
