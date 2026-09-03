@@ -2,6 +2,25 @@
 
 All notable changes to `laravel-oidc` will be documented in this file.
 
+## v1.2.0 - 2026-09-02
+
+### What's Changed
+
+#### Added
+
+- Custom user field mappings for providers using non-standard claims (#3, #4). Map any of `id`, `nickname`, `name`, `email`, `avatar` to the claim that holds it:
+
+```php
+// config/oidc.php, "default" block
+'user_field_mappings' => [
+    'email' => 'mail',
+],
+
+```
+Also available at runtime via `new OidcConfig(..., userFieldMappings: ['email' => 'mail'])` and through an optional `user_field_mappings` JSON column on models using `HasOidcConfig`. Unmapped fields keep the standard OIDC claims (`sub`, `preferred_username`, `name`, `email`, `picture`).
+
+**Full Changelog**: https://github.com/jeffersongoncalves/laravel-oidc/compare/v1.1.1...v1.2.0
+
 ## v1.1.1 - 2026-08-16
 
 ### Security
@@ -51,6 +70,7 @@ First public release of **laravel-oidc** — OpenID Connect for Laravel via a cu
 
 ```bash
 composer require jeffersongoncalves/laravel-oidc
+
 
 
 
