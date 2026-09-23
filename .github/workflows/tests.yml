@@ -1,4 +1,4 @@
-name: tests
+name: Tests
 
 on:
   push:
@@ -6,81 +6,34 @@ on:
   pull_request:
     branches: [master]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  l12:
+  tests:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-latest]
-        php: [8.2, 8.3]
-        laravel: [^12.0]
-        stability: [prefer-stable]
 
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+    name: PHP 8.4 - Laravel 13
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
-          php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, intl, openssl
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, pdo_mysql, pdo_pgsql, bcmath, intl, gd, exif, iconv, fileinfo
           coverage: none
 
-      - name: Setup problem matchers
+      - name: Install dependencies (Laravel 13)
         run: |
-          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+          composer require "laravel/framework:^13.0" "orchestra/testbench:^11.0" --dev --no-interaction --no-update
+          composer update --prefer-stable --prefer-dist --no-interaction
 
-      - name: Install dependencies
-        run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:^10.0" "nesbot/carbon:^3.8" --no-interaction --no-update
-          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
-
-      - name: List Installed Dependencies
-        run: composer show -D
-
-      - name: Execute tests
-        run: vendor/bin/pest --no-coverage
-
-  l13:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-latest]
-        php: [8.3, 8.4]
-        laravel: [^13.0]
-        stability: [prefer-stable]
-
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, intl, openssl
-          coverage: none
-
-      - name: Setup problem matchers
-        run: |
-          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-
-      - name: Install dependencies
-        run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:^11.0" --no-interaction --no-update
-          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
-
-      - name: List Installed Dependencies
-        run: composer show -D
-
-      - name: Execute tests
-        run: vendor/bin/pest --no-coverage
+      - name: Run tests
+        run: vendor/bin/pest
