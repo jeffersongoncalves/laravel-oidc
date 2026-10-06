@@ -1,6 +1,6 @@
 <div class="filament-hidden">
 
-![Laravel OIDC](https://raw.githubusercontent.com/jeffersongoncalves/laravel-oidc/master/art/jeffersongoncalves-laravel-oidc.png)
+![Laravel OIDC](https://raw.githubusercontent.com/jeffersongoncalves/laravel-oidc/main/art/jeffersongoncalves-laravel-oidc.png)
 
 </div>
 
@@ -10,8 +10,8 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/jeffersongoncalves/laravel-oidc.svg?style=flat-square)](https://packagist.org/packages/jeffersongoncalves/laravel-oidc)
 [![Total Downloads](https://img.shields.io/packagist/dt/jeffersongoncalves/laravel-oidc.svg?style=flat-square)](https://packagist.org/packages/jeffersongoncalves/laravel-oidc)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/jeffersongoncalves/laravel-oidc/tests.yml?branch=master&label=tests&style=flat-square)](https://github.com/jeffersongoncalves/laravel-oidc/actions?query=workflow%3Atests+branch%3Amaster)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/jeffersongoncalves/laravel-oidc/pint.yml?branch=master&label=code%20style&style=flat-square)](https://github.com/jeffersongoncalves/laravel-oidc/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amaster)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/jeffersongoncalves/laravel-oidc/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/jeffersongoncalves/laravel-oidc/actions?query=workflow%3Atests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/jeffersongoncalves/laravel-oidc/pint.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/jeffersongoncalves/laravel-oidc/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![License](https://img.shields.io/packagist/l/jeffersongoncalves/laravel-oidc.svg?style=flat-square)](LICENSE.md)
 
 Laravel OIDC adds first-class **OpenID Connect** support to Laravel by registering a custom
