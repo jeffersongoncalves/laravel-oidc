@@ -2,6 +2,18 @@
 
 All notable changes to `laravel-oidc` will be documented in this file.
 
+## v1.3.0 - 2026-10-07
+
+### Added
+
+- Optional `OidcIdentity` model, `HasOidcIdentities` trait and publishable `create_oidc_identities_table` migration (`php artisan vendor:publish --tag="oidc-migrations"`) to link authenticatables to OIDC identities (unique per issuer + subject). Table name configurable via `oidc.identities_table`.
+
+### Fixed
+
+- Allow `guzzlehttp/guzzle` `^7.8` again so the package installs on Laravel 11 and 12.
+
+**Full Changelog**: https://github.com/jeffersongoncalves/laravel-oidc/compare/v1.2.0...v1.3.0
+
 ## v1.2.0 - 2026-09-02
 
 ### What's Changed
@@ -15,6 +27,7 @@ All notable changes to `laravel-oidc` will be documented in this file.
 'user_field_mappings' => [
     'email' => 'mail',
 ],
+
 
 ```
 Also available at runtime via `new OidcConfig(..., userFieldMappings: ['email' => 'mail'])` and through an optional `user_field_mappings` JSON column on models using `HasOidcConfig`. Unmapped fields keep the standard OIDC claims (`sub`, `preferred_username`, `name`, `email`, `picture`).
@@ -70,6 +83,7 @@ First public release of **laravel-oidc** — OpenID Connect for Laravel via a cu
 
 ```bash
 composer require jeffersongoncalves/laravel-oidc
+
 
 
 
