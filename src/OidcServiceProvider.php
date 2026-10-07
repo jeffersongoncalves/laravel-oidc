@@ -21,7 +21,8 @@ class OidcServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('laravel-oidc')
-            ->hasConfigFile('oidc');
+            ->hasConfigFile('oidc')
+            ->hasMigration('create_oidc_identities_table');
     }
 
     public function packageRegistered(): void

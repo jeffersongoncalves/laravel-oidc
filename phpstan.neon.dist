@@ -16,3 +16,7 @@ parameters:
             message: '#Trait JeffersonGoncalves\\LaravelOidc\\Concerns\\HasOidcConfig is used zero times#'
             identifier: trait.unused
             path: src/Concerns/HasOidcConfig.php
+        -
+            message: '#Trait JeffersonGoncalves\\LaravelOidc\\Concerns\\HasOidcIdentities is used zero times#'
+            identifier: trait.unused
+            path: src/Concerns/HasOidcIdentities.php
