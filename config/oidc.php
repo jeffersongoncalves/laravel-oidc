@@ -60,6 +60,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | OIDC identities table
+    |--------------------------------------------------------------------------
+    |
+    | Table used by the optional OidcIdentity model to link an authenticatable
+    | to its OIDC identities (issuer + subject). Publish the migration with
+    | `php artisan vendor:publish --tag="oidc-migrations"` to use it.
+    |
+    */
+
+    'identities_table' => 'oidc_identities',
+
+    /*
+    |--------------------------------------------------------------------------
     | Default (single-tenant) configuration
     |--------------------------------------------------------------------------
     |

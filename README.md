@@ -181,6 +181,36 @@ $config = new OidcConfig(
 Models using `HasOidcConfig` can store the same map in an optional `user_field_mappings`
 JSON column.
 
+### Linking users to OIDC identities (optional)
+
+The package ships an optional `OidcIdentity` model that maps any authenticatable to its
+OIDC identities (unique per `issuer` + `subject`), storing claims and tokens. Publish and
+run the migration:
+
+```bash
+php artisan vendor:publish --tag="oidc-migrations"
+php artisan migrate
+```
+
+Add the trait to your user model:
+
+```php
+use JeffersonGoncalves\LaravelOidc\Concerns\HasOidcIdentities;
+
+class User extends Authenticatable
+{
+    use HasOidcIdentities;
+}
+
+$user->oidcIdentities()->updateOrCreate(
+    ['issuer' => $oidcUser->idTokenClaims['iss'], 'subject' => $oidcUser->getId()],
+    ['email' => $oidcUser->getEmail(), 'claims' => $oidcUser->idTokenClaims],
+);
+```
+
+The table name is configurable via `oidc.identities_table`. Tokens are hidden from
+serialization.
+
 ### Discovery without Socialite
 
 ```php
