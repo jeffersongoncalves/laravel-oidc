@@ -5,11 +5,19 @@ declare(strict_types=1);
 namespace JeffersonGoncalves\LaravelOidc\Tests;
 
 use JeffersonGoncalves\LaravelOidc\OidcServiceProvider;
+use JeffersonGoncalves\PestPluginDatabaseMigrations\LoadsPackageMigrations;
 use Laravel\Socialite\SocialiteServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
+    use LoadsPackageMigrations;
+
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadPackageMigrations(OidcServiceProvider::class);
+    }
+
     protected function getPackageProviders($app): array
     {
         return [
