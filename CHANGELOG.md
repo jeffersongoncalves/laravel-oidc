@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-oidc` will be documented in this file.
 
+## v1.3.1 - 2026-10-28
+
+Tests now load the package migrations with jeffersongoncalves/pest-plugin-database-migrations, in the order declared by the service provider, instead of copying the .php.stub files by hand. No runtime changes.
+
 ## v1.3.0 - 2026-10-07
 
 ### Added
@@ -27,6 +31,7 @@ All notable changes to `laravel-oidc` will be documented in this file.
 'user_field_mappings' => [
     'email' => 'mail',
 ],
+
 
 
 ```
@@ -83,6 +88,7 @@ First public release of **laravel-oidc** — OpenID Connect for Laravel via a cu
 
 ```bash
 composer require jeffersongoncalves/laravel-oidc
+
 
 
 
