@@ -12,12 +12,9 @@ beforeEach(function () {
         $table->increments('id');
         $table->string('name');
     });
-
-    (require __DIR__.'/../../database/migrations/create_oidc_identities_table.php.stub')->up();
 });
 
 afterEach(function () {
-    Schema::dropIfExists('oidc_identities');
     Schema::dropIfExists('accounts');
 });
 
